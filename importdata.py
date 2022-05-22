@@ -33,112 +33,155 @@ for row in csvreader:
 database = sqlite3.connect('../wdda_sem_db1.db')
 cursor = database.cursor()
 
-#insert country
-insertQuery = "INSERT INTO Country (Country) VALUES (?)"
-for country in countryList:
-    # Execute sql Query
-    if country != 'country':
-        cursor.execute(insertQuery, (country,))
+def insertData():
+    #insert country
+    insertQuery = "INSERT INTO Country (Country) VALUES (?)"
+    for country in countryList:
+        # Execute sql Query
+        if country != 'country':
+            cursor.execute(insertQuery, (country,))
 
 
-newreader = getCsv()
-# insert coordinates
-insertQuery = "INSERT INTO Coordinates (Longitude, Latitude, HasBadGeoCoordinates) VALUES (?, ?, ?)"
-for row in newreader:
-    longitude = row[13]
-    latitude = row[14]
-    hasBadGeoCode = row[15]
-    if (longitude != 'longitude') & (latitude != 'latitude') & (hasBadGeoCode != 'hasBadGeocode'):
-        cursor.execute(insertQuery, (longitude, latitude, hasBadGeoCode,))
+    newreader = getCsv()
+    # insert coordinates
+    insertQuery = "INSERT INTO Coordinates (Longitude, Latitude, HasBadGeoCoordinates) VALUES (?, ?, ?)"
+    for row in newreader:
+        longitude = row[13]
+        latitude = row[14]
+        hasBadGeoCode = row[15]
+        if (longitude != 'longitude') & (latitude != 'latitude') & (hasBadGeoCode != 'hasBadGeocode'):
+            cursor.execute(insertQuery, (float(longitude), float(latitude), hasBadGeoCode,))
 
 
-# insert Zipcodes
-insertQuery = "INSERT INTO Zipcode (Zipcode) VALUES (?)"
-for zipcode in zipcodeList:
-    if zipcode != 'zipcode':
-        cursor.execute(insertQuery, (zipcode,))
+    # insert Zipcodes
+    insertQuery = "INSERT INTO Zipcode (Zipcode) VALUES (?)"
+    for zipcode in zipcodeList:
+        if (zipcode != 'zipcode') and (zipcode != ''):
+            cursor.execute(insertQuery, (zipcode,))
 
 
-# insert Cities
-insertQuery = "INSERT INTO City (City) VALUES (?)"
-for city in cityList:
-    if city != 'city':
-        cursor.execute(insertQuery, (city,))
+    # insert Cities
+    insertQuery = "INSERT INTO City (City) VALUES (?)"
+    for city in cityList:
+        if city != 'city':
+            cursor.execute(insertQuery, (city,))
 
 
-# insert Currencies
-insertQuery = "INSERT INTO Currency (Currency) VALUES (?)"
-for currency in currencyList:
-    if currency != 'currency':
-        cursor.execute(insertQuery, (currency,))
+    # insert Currencies
+    insertQuery = "INSERT INTO Currency (Currency) VALUES (?)"
+    for currency in currencyList:
+        if currency != 'currency':
+            cursor.execute(insertQuery, (currency,))
 
 
-# insert Events
-insertQuery = "INSERT INTO Event (Event) VALUES (?)"
-for event in eventList:
-    if event != 'event':
-        cursor.execute(insertQuery, (event,))
+    # insert Events
+    insertQuery = "INSERT INTO Event (Event) VALUES (?)"
+    for event in eventList:
+        if event != 'event':
+            cursor.execute(insertQuery, (event,))
 
-# insert HomeType
-insertQuery = "INSERT INTO HomeType (HomeType) VALUES (?)"
-for homeType in homeTypeList:
-    if homeType != 'homeType':
-        cursor.execute(insertQuery, (homeType,))
-
-
-# insert LotAreaUnit
-insertQuery = "INSERT INTO LotAreaUnit (LotAreaUnit) VALUES (?)"
-for lotAreUnit in lotAreaUnitList:
-    if lotAreUnit != 'lotAreUnits':
-        cursor.execute(insertQuery, (lotAreUnit,))
-
-# insert County
-insertQuery = "INSERT INTO County (County) VALUES (?)"
-for county in countyList:
-    if county != 'county':
-        cursor.execute(insertQuery, (county,))
-
-# insert State
-#TODO: Insert from select
-insertQuery = "INSERT INTO State (State, FK_Country) VALUES (?, ?)"
-for state in stateList:
-    if state != 'state':
-        cursor.execute(insertQuery, (state, 1))
+    # insert HomeType
+    insertQuery = "INSERT INTO HomeType (HomeType) VALUES (?)"
+    for homeType in homeTypeList:
+        if homeType != 'homeType':
+            cursor.execute(insertQuery, (homeType,))
 
 
+    # insert LotAreaUnit
+    insertQuery = "INSERT INTO LotAreaUnit (LotAreaUnit) VALUES (?)"
+    for lotAreUnit in lotAreaUnitList:
+        if lotAreUnit != 'lotAreUnits':
+            cursor.execute(insertQuery, (lotAreUnit,))
 
-database.commit()
+    # insert County
+    insertQuery = "INSERT INTO County (County) VALUES (?)"
+    for county in countyList:
+        if county != 'county':
+            cursor.execute(insertQuery, (county,))
+
+    # insert State
+    #TODO: Insert from select
+    insertQuery = "INSERT INTO State (State, FK_Country) VALUES (?, ?)"
+    for state in stateList:
+        if state != 'state':
+            cursor.execute(insertQuery, (state, 1))
 
 
-def getCityId(city):
-    selectQuery = """SELECT ID FROM City WHERE City = ?"""
-    a = cursor.execute(selectQuery, (city,))
-    return a.fetchone()
 
-def getStateId(state):
-    selectQuery = """SELECT ID FROM State WHERE State = ?"""
-    a = cursor.execute(selectQuery, (state,))
-    return a.fetchone()
+    database.commit()
 
-def getCoordinatesId(longitude, latitude, hasBadGeoCode):
-    selectQuery = """SELECT ID FROM Coordinates WHERE Longitude = ? AND Latitude = ? AND HasBadGeoCoordinates = ?"""
-    a = cursor.execute(selectQuery, (longitude, latitude, hasBadGeoCode,))
-    return a.fetchone()
+# insertData()
 
-def getCountyId(county):
-    selectQuery = """SELECT ID FROM County WHERE County = ?"""
-    a = cursor.execute(selectQuery, (county,))
-    return a.fetchone()
+def getCityId(cityTable, city):
+    if len(cityTable) == 0:
+        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        selectQuery = """SELECT * FROM City"""
+        rows = cursor.execute(selectQuery)
+        cityTable = rows.fetchall()
+    for cityItem in cityTable:
+        if city in cityItem:
+            return cityTable, cityItem[0]
+    raise Exception("City not found")
 
-def getzipcodeid(zipcode):
-    selectQuery = """SELECT ID FROM Zipcode WHERE Zipcode = ?"""
-    a = cursor.execute(selectQuery, (zipcode,))
-    return a.fetchone()
+def getStateId(stateTable, state):
+    if len(stateTable) == 0:
+        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        selectQuery = """SELECT * FROM State"""
+        rows = cursor.execute(selectQuery)
+        stateTable = rows.fetchall()
+    for stateItem in stateTable:
+        if state in stateItem:
+            return stateTable, stateItem[0]
+    raise Exception("State not found")
+
+def getCoordinatesId(coordinatesTable, longitude, latitude, hasBadGeoCode):
+    if len(coordinatesTable) == 0:
+        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        selectQuery = """SELECT * FROM Coordinates"""
+        rows = cursor.execute(selectQuery)
+        coordinatesTable = rows.fetchall()
+    for coordinatesItem in coordinatesTable:
+        # valLong = '%.7f'%(longitude)
+        if longitude in coordinatesItem:
+            if latitude in coordinatesItem:
+                if hasBadGeoCode in coordinatesItem:
+                    coordinatesTable.remove(coordinatesItem)
+                    return coordinatesTable, coordinatesItem[0]
+    raise Exception("Coordinates not found")
+
+def getCountyId(countyTable, county):
+    if len(countyTable) == 0:
+        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        selectQuery = """SELECT * FROM County"""
+        rows = cursor.execute(selectQuery)
+        countyTable = rows.fetchall()
+    for countyItem in countyTable:
+        if county in countyItem:
+            return countyTable, countyItem[0]
+    raise Exception("County not found")
+
+
+def getZipcodeId(zipcodeTable, zipcode):
+    if zipcode == '':
+        return zipcodeTable, 0
+    if len(zipcodeTable) == 0:
+        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        selectQuery = """SELECT * FROM Zipcode"""
+        rows = cursor.execute(selectQuery)
+        zipcodeTable = rows.fetchall()
+    for zipcodeItem in zipcodeTable:
+        if int(zipcode) in zipcodeItem:
+            return zipcodeTable, zipcodeItem[0]
+    raise Exception("Zipcode not found")
 
 # insert State
 csv = getCsv()
-insertQuery = "INSERT INTO Address (Address, FK_City, FK_State, FK_Zipcode, FK_Coordinates, FK_County) VALUES (?, ?, ?, ?, ?, ?)"
 addressList = []
+cityTable = tuple()
+stateTable = tuple()
+coordinatesTable = tuple()
+countyTable = tuple()
+zipcodeTable = tuple()
 for row in csv:
     address = row[11]
     city = row[8]
@@ -149,15 +192,17 @@ for row in csv:
     county = row[33]
     zipcode = row[12]
     if address != 'streetAddress':
-        cityId = getCityId(city)
-        stateId = getStateId(state)
-        coordinatesId = getCoordinatesId(longitude, latitude, hasBadGeoCode)
-        countyId = getCountyId(county)
-        zipcodeId = getzipcodeid(zipcode)
+        cityTable, cityId = getCityId(cityTable, city)
+        stateTable, stateId = getStateId(stateTable, state)
+        coordinatesTable, coordinatesId = getCoordinatesId(coordinatesTable, float(longitude), float(latitude), int(hasBadGeoCode))
+        countyTable, countyId = getCountyId(countyTable, county)
+        zipcodeTable, zipcodeId = getZipcodeId(zipcodeTable, zipcode)
         addressList.append((address, cityId, stateId, zipcodeId, coordinatesId, countyId))
 
+insertQuery = "INSERT INTO Address (Address, FK_City, FK_State, FK_Zipcode, FK_Coordinates, FK_County) VALUES (?, ?, ?, ?, ?, ?)"
 cursor.executemany(insertQuery, addressList)
 
+print(addressList)
 database.commit()
 
 selectQuery = """SELECT * FROM Address"""
