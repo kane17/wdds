@@ -117,6 +117,7 @@ CREATE TABLE `Properties` (
     `YearBuilt` VARCHAR(10) NOT NULL,
     'IsForAuction' BOOL NOT NULL,
     'IsBankOwned' BOOL NOT NULL,
+    'DatePosted' VARCHAR(20) NOT NULL,
     `FK_HomeType` INTEGER NOT NULL,
     'FK_Event' INTEGER NOT NULL,
     FOREIGN KEY ('FK_HomeType') REFERENCES HomeType (ID),

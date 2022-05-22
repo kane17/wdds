@@ -6,34 +6,32 @@ def getCsv():
     csvfile = open('../../RealEstate_California-adapted-new.csv',newline='') # `with` statement available in 2.5+# csv.DictReader uses first line in file for column headings by default
     return csv.reader(csvfile, delimiter=',', quotechar='|')
 
-
-# Country
-countryList = set()
-zipcodeList = set()
-cityList = set()
-currencyList = set()
-eventList = set()
-homeTypeList = set()
-lotAreaUnitList = set()
-countyList = set()
-stateList = set()
-
-csvreader = getCsv()
-for row in csvreader:
-    countryList.add(row[1])
-    zipcodeList.add(row[12])
-    cityList.add(row[8])
-    currencyList.add(row[17])
-    eventList.add(row[5])
-    homeTypeList.add(row[32])
-    lotAreaUnitList.add(row[20])
-    countyList.add(row[33])
-    stateList.add(row[9])
-
 database = sqlite3.connect('../wdda_sem_db1.db')
 cursor = database.cursor()
 
 def insertData():
+
+    countryList = set()
+    zipcodeList = set()
+    cityList = set()
+    currencyList = set()
+    eventList = set()
+    homeTypeList = set()
+    lotAreaUnitList = set()
+    countyList = set()
+    stateList = set()
+    csvreader = getCsv()
+    for row in csvreader:
+        countryList.add(row[1])
+        zipcodeList.add(row[12])
+        cityList.add(row[8])
+        currencyList.add(row[17])
+        eventList.add(row[5])
+        homeTypeList.add(row[32])
+        lotAreaUnitList.add(row[20])
+        countyList.add(row[33])
+        stateList.add(row[9])
+
     #insert country
     insertQuery = "INSERT INTO Country (Country) VALUES (?)"
     for country in countryList:
@@ -110,7 +108,7 @@ def insertData():
 
     database.commit()
 
-# insertData()
+insertData()
 
 def getCityId(cityTable, city):
     if len(cityTable) == 0:
@@ -174,38 +172,76 @@ def getZipcodeId(zipcodeTable, zipcode):
             return zipcodeTable, zipcodeItem[0]
     raise Exception("Zipcode not found")
 
-# insert State
-csv = getCsv()
-addressList = []
-cityTable = tuple()
-stateTable = tuple()
-coordinatesTable = tuple()
-countyTable = tuple()
-zipcodeTable = tuple()
-for row in csv:
-    address = row[11]
-    city = row[8]
-    state = row[9]
-    longitude = row[13]
-    latitude = row[14]
-    hasBadGeoCode = row[15]
-    county = row[33]
-    zipcode = row[12]
-    if address != 'streetAddress':
-        cityTable, cityId = getCityId(cityTable, city)
-        stateTable, stateId = getStateId(stateTable, state)
-        coordinatesTable, coordinatesId = getCoordinatesId(coordinatesTable, float(longitude), float(latitude), int(hasBadGeoCode))
-        countyTable, countyId = getCountyId(countyTable, county)
-        zipcodeTable, zipcodeId = getZipcodeId(zipcodeTable, zipcode)
-        addressList.append((address, cityId, stateId, zipcodeId, coordinatesId, countyId))
+# insert Address
+def insertAddressData():
+    csv = getCsv()
+    addressList = []
+    cityTable = tuple()
+    stateTable = tuple()
+    coordinatesTable = tuple()
+    countyTable = tuple()
+    zipcodeTable = tuple()
+    for row in csv:
+        address = row[11]
+        city = row[8]
+        state = row[9]
+        longitude = row[13]
+        latitude = row[14]
+        hasBadGeoCode = row[15]
+        county = row[33]
+        zipcode = row[12]
+        if address != 'streetAddress':
+            cityTable, cityId = getCityId(cityTable, city)
+            stateTable, stateId = getStateId(stateTable, state)
+            coordinatesTable, coordinatesId = getCoordinatesId(coordinatesTable, float(longitude), float(latitude), int(hasBadGeoCode))
+            countyTable, countyId = getCountyId(countyTable, county)
+            zipcodeTable, zipcodeId = getZipcodeId(zipcodeTable, zipcode)
+            addressList.append((address, cityId, stateId, zipcodeId, coordinatesId, countyId))
 
-insertQuery = "INSERT INTO Address (Address, FK_City, FK_State, FK_Zipcode, FK_Coordinates, FK_County) VALUES (?, ?, ?, ?, ?, ?)"
-cursor.executemany(insertQuery, addressList)
+    insertQuery = "INSERT INTO Address (Address, FK_City, FK_State, FK_Zipcode, FK_Coordinates, FK_County) VALUES (?, ?, ?, ?, ?, ?)"
+    cursor.executemany(insertQuery, addressList)
 
-print(addressList)
-database.commit()
+    print(addressList)
+    database.commit()
 
-selectQuery = """SELECT * FROM Address"""
+insertAddressData()
+
+def getLotAreaUnitId(lotAreaUnitTable, lotAreaUnit):
+    if lotAreaUnit == '':
+        return lotAreaUnitTable, 0
+    if len(lotAreaUnitTable) == 0:
+        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        selectQuery = """SELECT * FROM LotAreaUnit"""
+        rows = cursor.execute(selectQuery)
+        lotAreaUnitTable = rows.fetchall()
+    for lotAreaUnitItem in lotAreaUnitTable:
+        if lotAreaUnit in lotAreaUnitItem:
+            return lotAreaUnitTable, lotAreaUnitItem[0]
+    raise Exception("LotAreaUnit not found")
+
+#insert LivingArea
+def insertLivingAreaData():
+    csv = getCsv()
+    livingAreaList = []
+    lotAreaUnitTable = tuple()
+    for row in csv:
+        livingArea = row[18]
+        livingAreaValue = row[19]
+        lotAreaUnit = row[20]
+        if livingArea != 'livingArea':
+            lotAreaUnitTable, lotAreaUnitId = getLotAreaUnitId(lotAreaUnitTable, lotAreaUnit)
+            livingAreaList.append((livingArea, livingAreaValue, lotAreaUnitId))
+
+    insertQuery = "INSERT INTO LivingArea (LivingArea, LivingAreaValue, FK_LotAreaUnit) VALUES (?, ?, ?)"
+    cursor.executemany(insertQuery, livingAreaList)
+
+    print(livingAreaList)
+    database.commit()
+
+insertLivingAreaData()
+
+
+selectQuery = """SELECT * FROM LivingArea"""
 a = cursor.execute(selectQuery)
 
 rows = cursor.fetchall()
@@ -219,77 +255,3 @@ cursor.close()
 
 database.close()
 
-
-
-
-
-
-# print(countryList)
-# #print(coordinatesLatitudeList)
-# print(coordinatesLongitudeList)
-# print(hasBadGeoCodesList)
-# print(zipcodeList)
-# print(cityList)
-# print(currencyList)
-# print(eventList)
-# print(homeTypeList)
-# print(lotAreaUnitList)
-
-
-
-
-
-# 0. Normalisierte Tabellen manuell in SQL abfüllen mit INSERT
-# 1. wir iterieren das ganze csv für sömtliche Daten
-# 2. sämtliche daten abfüllen
-# 3. Foreign Keys korrekt setzen innerhalb Schlaufe
-# 4. done
-
-
-
-
-# to_db = [(i['col1'], i['col2']) for i in dr]
-#
-#
-# database = sqlite3.connect('../wdda_sem_db1.db')
-#
-# # Get the cursor, which is used to traverse the database, line by line
-# cursor = database.cursor()
-#
-# #City
-# queryCity = """INSERT INTO City (City) """
-#
-#
-# # Create the INSERT INTO sql query
-# query = """INSERT INTO orders (product, customer_type, rep, date, actual, expected, open_opportunities, closed_opportunities, city, state, zip, population, region) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-#
-# # Create a For loop to iterate through each row in the XLS file, starting at row 2 to skip the headers
-# for r in range(1, sheet.nrows):
-#     product		= sheet.cell(r,).value
-#     customer	= sheet.cell(r,1).value
-#     rep			= sheet.cell(r,2).value
-#     date		= sheet.cell(r,3).value
-#     actual		= sheet.cell(r,4).value
-#     expected	= sheet.cell(r,5).value
-#     open		= sheet.cell(r,6).value
-#     closed		= sheet.cell(r,7).value
-#     city		= sheet.cell(r,8).value
-#     state		= sheet.cell(r,9).value
-#     zip			= sheet.cell(r,10).value
-#     pop			= sheet.cell(r,11).value
-#     region	= sheet.cell(r,12).value
-#
-#     # Assign values from each row
-#     values = (product, customer, rep, date, actual, expected, open, closed, city, state, zip, pop, region)
-#
-#     # Execute sql Query
-#     cursor.execute(query, values)
-#
-# # Close the cursor
-# cursor.close()
-#
-# # Commit the transaction
-# database.commit()
-#
-# # Close the database connection
-# database.close()
