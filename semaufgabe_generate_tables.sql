@@ -113,7 +113,7 @@ CREATE TABLE `Properties` (
     `Spa` BOOL NOT NULL,
     `IsNewConstruction` BOOL NOT NULL,
     `HasPetsAllowed` BOOL NOT NULL,
-    `PricePerSquareFoot` VARCHAR(10) NOT NULL,
+    `PricePerSquareFoot` VARCHAR(10),
     `YearBuilt` VARCHAR(10) NOT NULL,
     'IsForAuction' BOOL NOT NULL,
     'IsBankOwned' BOOL NOT NULL,

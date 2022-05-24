@@ -9,6 +9,9 @@ def getCsv():
 database = sqlite3.connect('../wdda_sem_db1.db')
 cursor = database.cursor()
 
+# Diese Funktion lädt die Daten der normalisierten Tabellen in die Datenbank. Diese Funktion muss zuerst ausgeführt
+# werden bevor die Daten der Address, House, etc. importiert werden können, da die Einträge schon existieren müssen
+# für die FK.
 def insertData():
 
     countryList = set()
@@ -175,7 +178,7 @@ def getZipcodeId(zipcodeTable, zipcode):
 # insert Address
 def insertAddressData():
     csv = getCsv()
-    addressList = []
+    addressList = set()
     cityTable = tuple()
     stateTable = tuple()
     coordinatesTable = tuple()
@@ -196,12 +199,11 @@ def insertAddressData():
             coordinatesTable, coordinatesId = getCoordinatesId(coordinatesTable, float(longitude), float(latitude), int(hasBadGeoCode))
             countyTable, countyId = getCountyId(countyTable, county)
             zipcodeTable, zipcodeId = getZipcodeId(zipcodeTable, zipcode)
-            addressList.append((address, cityId, stateId, zipcodeId, coordinatesId, countyId))
+            addressList.add((address, cityId, stateId, zipcodeId, coordinatesId, countyId))
 
     insertQuery = "INSERT INTO Address (Address, FK_City, FK_State, FK_Zipcode, FK_Coordinates, FK_County) VALUES (?, ?, ?, ?, ?, ?)"
     cursor.executemany(insertQuery, addressList)
 
-    print(addressList)
     database.commit()
 
 insertAddressData()
@@ -222,7 +224,7 @@ def getLotAreaUnitId(lotAreaUnitTable, lotAreaUnit):
 #insert LivingArea
 def insertLivingAreaData():
     csv = getCsv()
-    livingAreaList = []
+    livingAreaList = set()
     lotAreaUnitTable = tuple()
     for row in csv:
         livingArea = row[18]
@@ -230,26 +232,118 @@ def insertLivingAreaData():
         lotAreaUnit = row[20]
         if livingArea != 'livingArea':
             lotAreaUnitTable, lotAreaUnitId = getLotAreaUnitId(lotAreaUnitTable, lotAreaUnit)
-            livingAreaList.append((livingArea, livingAreaValue, lotAreaUnitId))
+            livingAreaList.add((livingArea, livingAreaValue, lotAreaUnitId))
 
     insertQuery = "INSERT INTO LivingArea (LivingArea, LivingAreaValue, FK_LotAreaUnit) VALUES (?, ?, ?)"
     cursor.executemany(insertQuery, livingAreaList)
 
-    print(livingAreaList)
     database.commit()
 
 insertLivingAreaData()
 
+# TODO: ausprogrammieren?
+def getCurrencyId():
+    return 1
+# if currency == '':
+    #     return currencyTable, 0
+    # if len(currencyTable) == 0:
+    #     #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+    #     selectQuery = """SELECT * FROM LotAreaUnit"""
+    #     rows = cursor.execute(selectQuery)
+    #     lotAreaUnitTable = rows.fetchall()
+    # for currencyItem in currencyTable:
+    #     if currency in currencyItem:
+    #         return currencyTable, currencyItem[0]
+    # raise Exception("LotAreaUnit not found")
 
-selectQuery = """SELECT * FROM LivingArea"""
-a = cursor.execute(selectQuery)
+def insertPrices():
+    csv = getCsv()
+    priceList = set()
+    currencyTable = tuple()
+    for row in csv:
+        price = row[6]
+        if price != 'price':
+            currencyId = getCurrencyId()
+            priceList.add((price, currencyId))
 
-rows = cursor.fetchall()
+    insertQuery = "INSERT INTO Price (Price, FK_Currency) VALUES (?, ?)"
+    cursor.executemany(insertQuery, priceList)
+    database.commit()
 
-for row in rows:
-    print(row)
 
-print(len(rows))
+insertPrices()
+
+
+def getHomeTypeId(homeTypeTable, homeType):
+    if homeType == '':
+        return homeTypeTable, 0
+    if len(homeTypeTable) == 0:
+        selectQuery = """SELECT * FROM HomeType"""
+        rows = cursor.execute(selectQuery)
+        homeTypeTable = rows.fetchall()
+    for homeTypeItem in homeTypeTable:
+        if homeType in homeTypeItem:
+            return homeTypeTable, homeTypeItem[0]
+    raise Exception("HomeType not found")
+
+def getEventId(eventTable, event):
+    if event == '':
+        return eventTable, 0
+    if len(eventTable) == 0:
+        selectQuery = """SELECT * FROM Event"""
+        rows = cursor.execute(selectQuery)
+        eventTable = rows.fetchall()
+    for eventItem in eventTable:
+        if event in eventItem:
+            return eventTable, eventItem[0]
+    raise Exception("Event not found")
+
+def insertPropertiesData():
+    csv = getCsv()
+    propertiesList = set()
+    eventTable = tuple()
+    homeTypeTable = tuple()
+    for row in csv:
+        bathrooms = row[21]
+        bedrooms = row[22]
+        buildingArea = row[23]
+        parking = row[24]
+        garageSpaces = row[25]
+        hasGarage = row[26]
+        levels = row[27]
+        pool = row[28]
+        spa = row[29]
+        isNewConstruction = row[30]
+        hasPetsAllowed = row[31]
+        homeType = row[32]
+        pricePerSquareFoot = row[7]
+        yearBuilt = row[10]
+        isForAuction = row[4]
+        isBankOwned = row[3]
+        event = row[5]
+        datePosted = row[2]
+        if bathrooms != 'bathrooms':
+            homeTypeTable, homeTypeId = getHomeTypeId(homeTypeTable, homeType)
+            eventTable, eventId = getEventId(eventTable, event)
+            propertiesList.add((bathrooms, bedrooms, buildingArea, parking, hasGarage, garageSpaces, levels, pool, spa, isNewConstruction, hasPetsAllowed, pricePerSquareFoot, yearBuilt, isForAuction, isBankOwned, datePosted, homeTypeId, eventId))
+
+    insertQuery = "INSERT INTO Properties (Bathrooms, Bedrooms, Buildingarea, Parking, HasGarage, Garagespaces, Levels, Pool, Spa, IsNewConstruction, HasPetsAllowed, PricePerSquareFoot, YearBuilt, IsForAuction, IsBankOwned, DatePosted, FK_HomeType, FK_Event) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    cursor.executemany(insertQuery, propertiesList)
+
+    database.commit()
+
+
+insertPropertiesData()
+
+# selectQuery = """SELECT * FROM Properties"""
+# a = cursor.execute(selectQuery)
+#
+# rows = cursor.fetchall()
+#
+# for row in rows:
+#     print(row)
+#
+# print(len(rows))
 
 cursor.close()
 
