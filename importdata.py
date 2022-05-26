@@ -3,17 +3,19 @@ import sqlite3
 
 
 def getCsv():
-    csvfile = open('../../RealEstate_California-adapted-new.csv',newline='') # `with` statement available in 2.5+# csv.DictReader uses first line in file for column headings by default
+    csvfile = open('../../RealEstate_California-adapted-new.csv',
+                   newline='')  # `with` statement available in 2.5+# csv.DictReader uses first line in file for column headings by default
     return csv.reader(csvfile, delimiter=',', quotechar='|')
+
 
 database = sqlite3.connect('../wdda_sem_db1.db')
 cursor = database.cursor()
+
 
 # Diese Funktion lädt die Daten der normalisierten Tabellen in die Datenbank. Diese Funktion muss zuerst ausgeführt
 # werden bevor die Daten der Address, House, etc. importiert werden können, da die Einträge schon existieren müssen
 # für die FK.
 def insertData():
-
     countryList = set()
     zipcodeList = set()
     cityList = set()
@@ -35,13 +37,12 @@ def insertData():
         countyList.add(row[33])
         stateList.add(row[9])
 
-    #insert country
+    # insert country
     insertQuery = "INSERT INTO Country (Country) VALUES (?)"
     for country in countryList:
         # Execute sql Query
         if country != 'country':
             cursor.execute(insertQuery, (country,))
-
 
     newreader = getCsv()
     # insert coordinates
@@ -53,13 +54,11 @@ def insertData():
         if (longitude != 'longitude') & (latitude != 'latitude') & (hasBadGeoCode != 'hasBadGeocode'):
             cursor.execute(insertQuery, (float(longitude), float(latitude), hasBadGeoCode,))
 
-
     # insert Zipcodes
     insertQuery = "INSERT INTO Zipcode (Zipcode) VALUES (?)"
     for zipcode in zipcodeList:
         if (zipcode != 'zipcode') and (zipcode != ''):
             cursor.execute(insertQuery, (zipcode,))
-
 
     # insert Cities
     insertQuery = "INSERT INTO City (City) VALUES (?)"
@@ -67,13 +66,11 @@ def insertData():
         if city != 'city':
             cursor.execute(insertQuery, (city,))
 
-
     # insert Currencies
     insertQuery = "INSERT INTO Currency (Currency) VALUES (?)"
     for currency in currencyList:
         if currency != 'currency':
             cursor.execute(insertQuery, (currency,))
-
 
     # insert Events
     insertQuery = "INSERT INTO Event (Event) VALUES (?)"
@@ -86,7 +83,6 @@ def insertData():
     for homeType in homeTypeList:
         if homeType != 'homeType':
             cursor.execute(insertQuery, (homeType,))
-
 
     # insert LotAreaUnit
     insertQuery = "INSERT INTO LotAreaUnit (LotAreaUnit) VALUES (?)"
@@ -101,21 +97,21 @@ def insertData():
             cursor.execute(insertQuery, (county,))
 
     # insert State
-    #TODO: Insert from select
+    # TODO: Insert from select
     insertQuery = "INSERT INTO State (State, FK_Country) VALUES (?, ?)"
     for state in stateList:
         if state != 'state':
             cursor.execute(insertQuery, (state, 1))
 
-
-
     database.commit()
+
 
 insertData()
 
+
 def getCityId(cityTable, city):
     if len(cityTable) == 0:
-        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        # selectQuery = """SELECT ID FROM City WHERE City = ?"""
         selectQuery = """SELECT * FROM City"""
         rows = cursor.execute(selectQuery)
         cityTable = rows.fetchall()
@@ -124,9 +120,10 @@ def getCityId(cityTable, city):
             return cityTable, cityItem[0]
     raise Exception("City not found")
 
+
 def getStateId(stateTable, state):
     if len(stateTable) == 0:
-        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        # selectQuery = """SELECT ID FROM City WHERE City = ?"""
         selectQuery = """SELECT * FROM State"""
         rows = cursor.execute(selectQuery)
         stateTable = rows.fetchall()
@@ -135,9 +132,10 @@ def getStateId(stateTable, state):
             return stateTable, stateItem[0]
     raise Exception("State not found")
 
+
 def getCoordinatesId(coordinatesTable, longitude, latitude, hasBadGeoCode):
     if len(coordinatesTable) == 0:
-        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        # selectQuery = """SELECT ID FROM City WHERE City = ?"""
         selectQuery = """SELECT * FROM Coordinates"""
         rows = cursor.execute(selectQuery)
         coordinatesTable = rows.fetchall()
@@ -150,9 +148,10 @@ def getCoordinatesId(coordinatesTable, longitude, latitude, hasBadGeoCode):
                     return coordinatesTable, coordinatesItem[0]
     raise Exception("Coordinates not found")
 
+
 def getCountyId(countyTable, county):
     if len(countyTable) == 0:
-        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        # selectQuery = """SELECT ID FROM City WHERE City = ?"""
         selectQuery = """SELECT * FROM County"""
         rows = cursor.execute(selectQuery)
         countyTable = rows.fetchall()
@@ -166,7 +165,7 @@ def getZipcodeId(zipcodeTable, zipcode):
     if zipcode == '':
         return zipcodeTable, 0
     if len(zipcodeTable) == 0:
-        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        # selectQuery = """SELECT ID FROM City WHERE City = ?"""
         selectQuery = """SELECT * FROM Zipcode"""
         rows = cursor.execute(selectQuery)
         zipcodeTable = rows.fetchall()
@@ -174,6 +173,7 @@ def getZipcodeId(zipcodeTable, zipcode):
         if int(zipcode) in zipcodeItem:
             return zipcodeTable, zipcodeItem[0]
     raise Exception("Zipcode not found")
+
 
 # insert Address
 def insertAddressData():
@@ -196,7 +196,8 @@ def insertAddressData():
         if address != 'streetAddress':
             cityTable, cityId = getCityId(cityTable, city)
             stateTable, stateId = getStateId(stateTable, state)
-            coordinatesTable, coordinatesId = getCoordinatesId(coordinatesTable, float(longitude), float(latitude), int(hasBadGeoCode))
+            coordinatesTable, coordinatesId = getCoordinatesId(coordinatesTable, float(longitude), float(latitude),
+                                                               int(hasBadGeoCode))
             countyTable, countyId = getCountyId(countyTable, county)
             zipcodeTable, zipcodeId = getZipcodeId(zipcodeTable, zipcode)
             addressList.add((address, cityId, stateId, zipcodeId, coordinatesId, countyId))
@@ -206,13 +207,15 @@ def insertAddressData():
 
     database.commit()
 
+
 insertAddressData()
+
 
 def getLotAreaUnitId(lotAreaUnitTable, lotAreaUnit):
     if lotAreaUnit == '':
         return lotAreaUnitTable, 0
     if len(lotAreaUnitTable) == 0:
-        #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+        # selectQuery = """SELECT ID FROM City WHERE City = ?"""
         selectQuery = """SELECT * FROM LotAreaUnit"""
         rows = cursor.execute(selectQuery)
         lotAreaUnitTable = rows.fetchall()
@@ -221,7 +224,8 @@ def getLotAreaUnitId(lotAreaUnitTable, lotAreaUnit):
             return lotAreaUnitTable, lotAreaUnitItem[0]
     raise Exception("LotAreaUnit not found")
 
-#insert LivingArea
+
+# insert LivingArea
 def insertLivingAreaData():
     csv = getCsv()
     livingAreaList = set()
@@ -239,22 +243,26 @@ def insertLivingAreaData():
 
     database.commit()
 
+
 insertLivingAreaData()
+
 
 # TODO: ausprogrammieren?
 def getCurrencyId():
     return 1
+
+
 # if currency == '':
-    #     return currencyTable, 0
-    # if len(currencyTable) == 0:
-    #     #selectQuery = """SELECT ID FROM City WHERE City = ?"""
-    #     selectQuery = """SELECT * FROM LotAreaUnit"""
-    #     rows = cursor.execute(selectQuery)
-    #     lotAreaUnitTable = rows.fetchall()
-    # for currencyItem in currencyTable:
-    #     if currency in currencyItem:
-    #         return currencyTable, currencyItem[0]
-    # raise Exception("LotAreaUnit not found")
+#     return currencyTable, 0
+# if len(currencyTable) == 0:
+#     #selectQuery = """SELECT ID FROM City WHERE City = ?"""
+#     selectQuery = """SELECT * FROM LotAreaUnit"""
+#     rows = cursor.execute(selectQuery)
+#     lotAreaUnitTable = rows.fetchall()
+# for currencyItem in currencyTable:
+#     if currency in currencyItem:
+#         return currencyTable, currencyItem[0]
+# raise Exception("LotAreaUnit not found")
 
 def insertPrices():
     csv = getCsv()
@@ -286,6 +294,7 @@ def getHomeTypeId(homeTypeTable, homeType):
             return homeTypeTable, homeTypeItem[0]
     raise Exception("HomeType not found")
 
+
 def getEventId(eventTable, event):
     if event == '':
         return eventTable, 0
@@ -298,44 +307,148 @@ def getEventId(eventTable, event):
             return eventTable, eventItem[0]
     raise Exception("Event not found")
 
+
+def getPropertyEntity(row):
+    eventTable = tuple()
+    homeTypeTable = tuple()
+    propertyEntity = list()
+    propertyEntity.append(row[21])
+    propertyEntity.append(row[22])
+    propertyEntity.append(row[23])
+    propertyEntity.append(row[24])
+    propertyEntity.append(row[26])
+    propertyEntity.append(row[25])
+    propertyEntity.append(row[27])
+    propertyEntity.append(row[28])
+    propertyEntity.append(row[29])
+    propertyEntity.append(row[30])
+    propertyEntity.append(row[31])
+    propertyEntity.append(row[7])
+    propertyEntity.append(row[10])
+    propertyEntity.append(row[4])
+    propertyEntity.append(row[3])
+    propertyEntity.append(row[2])
+    homeTypeTable, homeTypeId = getHomeTypeId(homeTypeTable, row[32])
+    eventTable, eventId = getEventId(eventTable, row[5])
+    propertyEntity.append(homeTypeId)
+    propertyEntity.append(eventId)
+    return propertyEntity
+
+
 def insertPropertiesData():
     csv = getCsv()
     propertiesList = set()
-    eventTable = tuple()
-    homeTypeTable = tuple()
     for row in csv:
-        bathrooms = row[21]
-        bedrooms = row[22]
-        buildingArea = row[23]
-        parking = row[24]
-        garageSpaces = row[25]
-        hasGarage = row[26]
-        levels = row[27]
-        pool = row[28]
-        spa = row[29]
-        isNewConstruction = row[30]
-        hasPetsAllowed = row[31]
         homeType = row[32]
-        pricePerSquareFoot = row[7]
-        yearBuilt = row[10]
-        isForAuction = row[4]
-        isBankOwned = row[3]
-        event = row[5]
-        datePosted = row[2]
-        if bathrooms != 'bathrooms':
-            homeTypeTable, homeTypeId = getHomeTypeId(homeTypeTable, homeType)
-            eventTable, eventId = getEventId(eventTable, event)
-            propertiesList.add((bathrooms, bedrooms, buildingArea, parking, hasGarage, garageSpaces, levels, pool, spa, isNewConstruction, hasPetsAllowed, pricePerSquareFoot, yearBuilt, isForAuction, isBankOwned, datePosted, homeTypeId, eventId))
+        if homeType != 'homeType':
+            propertyEntry = getPropertyEntity(row)
+            propertiesList.add((
+                               propertyEntry[0], propertyEntry[1], propertyEntry[2], propertyEntry[3], propertyEntry[4],
+                               propertyEntry[5], propertyEntry[6], propertyEntry[7], propertyEntry[8], propertyEntry[9],
+                               propertyEntry[10], propertyEntry[11], propertyEntry[12], propertyEntry[13],
+                               propertyEntry[14], propertyEntry[15], propertyEntry[16], propertyEntry[17]))
 
     insertQuery = "INSERT INTO Properties (Bathrooms, Bedrooms, Buildingarea, Parking, HasGarage, Garagespaces, Levels, Pool, Spa, IsNewConstruction, HasPetsAllowed, PricePerSquareFoot, YearBuilt, IsForAuction, IsBankOwned, DatePosted, FK_HomeType, FK_Event) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     cursor.executemany(insertQuery, propertiesList)
 
     database.commit()
 
+    selectQuery = """SELECT * FROM Properties"""
+    rows = cursor.execute(selectQuery)
+    propertiesTable = rows.fetchall()
+    return propertiesTable
 
-insertPropertiesData()
 
-# selectQuery = """SELECT * FROM Properties"""
+propertiesTable = insertPropertiesData()
+
+
+def getPropertiesId(propertiesTable, propertyFields):
+    match = False
+    for propertiesItem in propertiesTable:
+        if (propertyFields[0] == str(propertiesItem[1]) and
+                propertyFields[1] == str(propertiesItem[2]) and
+                propertyFields[2] == str(propertiesItem[3]) and
+                propertyFields[3] == str(propertiesItem[4]) and
+                propertyFields[4] == str(propertiesItem[5]) and
+                propertyFields[5] == str(propertiesItem[6]) and
+                propertyFields[6] == propertiesItem[7] and
+                propertyFields[7] == str(propertiesItem[8]) and
+                propertyFields[8] == str(propertiesItem[9]) and
+                propertyFields[9] == str(propertiesItem[10]) and
+                propertyFields[10] == str(propertiesItem[11]) and
+                propertyFields[11] == propertiesItem[12] and
+                propertyFields[12] == propertiesItem[13] and
+                propertyFields[13] == str(propertiesItem[14]) and
+                propertyFields[14] == str(propertiesItem[15]) and
+                propertyFields[15] == propertiesItem[16] and
+                propertyFields[16] == propertiesItem[17] and
+                propertyFields[17] == propertiesItem[18]):
+            return propertiesItem[0]
+    raise Exception("Properties not found")
+
+
+def getPriceId(priceTable, price):
+    if len(priceTable) == 0:
+        selectQuery = """SELECT * FROM Price"""
+        rows = cursor.execute(selectQuery)
+        priceTable = rows.fetchall()
+    for priceItem in priceTable:
+        # wenn kein Preis vorhanden
+        if price == 'N/A':
+            return priceTable, 0
+        if float(price) in priceItem:
+            return priceTable, priceItem[0]
+    raise Exception("Price not found")
+
+
+def getAddressId(addressTable, address):
+    if len(addressTable) == 0:
+        selectQuery = """SELECT * FROM Address"""
+        rows = cursor.execute(selectQuery)
+        addressTable = rows.fetchall()
+    for addressItem in addressTable:
+        if address in addressItem:
+            return addressTable, addressItem[0]
+    raise Exception("Address not found")
+
+
+def getLivingAreaId(livingAreaTable, livingArea):
+    if len(livingAreaTable) == 0:
+        selectQuery = """SELECT * FROM LivingArea"""
+        rows = cursor.execute(selectQuery)
+        livingAreaTable = rows.fetchall()
+    for livingAreaItem in livingAreaTable:
+        if int(livingArea) in livingAreaItem:
+            return livingAreaTable, livingAreaItem[0]
+    raise Exception("LivingArea not found")
+
+
+def insertHouseData(propertiesTable):
+    csv = getCsv()
+    houseList = set()
+    addressTable = tuple()
+    priceTable = tuple()
+    livingAreaTable = tuple()
+    for row in csv:
+        description = row[16]
+        price = row[6]
+        address = row[11]
+        livingArea = row[18]
+        if description != 'description':
+            propertiesId = getPropertiesId(propertiesTable, getPropertyEntity(row))
+            priceTable, priceId = getPriceId(priceTable, price)
+            addressTable, addressId = getAddressId(addressTable, address)
+            livingAreaTable, livingAreaId = getLivingAreaId(livingAreaTable, livingArea)
+            houseList.add((description, priceId, addressId, propertiesId, livingAreaId))
+
+    insertQuery = "INSERT INTO House (Description, FK_Price, FK_Address, FK_Properties, FK_LivingArea) VALUES (?, ?, ?, ?, ?)"
+    cursor.executemany(insertQuery, houseList)
+    print('test')
+    database.commit()
+
+insertHouseData(propertiesTable)
+
+# selectQuery = """SELECT * FROM House"""
 # a = cursor.execute(selectQuery)
 #
 # rows = cursor.fetchall()
@@ -348,4 +461,3 @@ insertPropertiesData()
 cursor.close()
 
 database.close()
-
