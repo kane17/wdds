@@ -72,7 +72,7 @@ CREATE TABLE `Currency` (
 
 CREATE TABLE `Price` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
-    `Price` FLOAT NOT NULL,
+    `Price` VARCHAR(20) NOT NULL,
     `FK_Currency` INTEGER NOT NULL,
     FOREIGN KEY ('FK_Currency') REFERENCES Currency (ID)
 );
@@ -126,7 +126,7 @@ CREATE TABLE `Properties` (
 
 
 CREATE TABLE `House` (
-    `ID` INTEGER NOT NULL,
+    `ID` VARCHAR(40) NOT NULL,
     `Description` VARCHAR(10000),
     `FK_Price` INTEGER NOT NULL,
     `FK_Address` INTEGER NOT NULL,

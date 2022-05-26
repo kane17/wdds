@@ -87,7 +87,7 @@ def insertData():
     # insert LotAreaUnit
     insertQuery = "INSERT INTO LotAreaUnit (LotAreaUnit) VALUES (?)"
     for lotAreUnit in lotAreaUnitList:
-        if lotAreUnit != 'lotAreUnits':
+        if lotAreUnit != 'lotAreaUnits':
             cursor.execute(insertQuery, (lotAreUnit,))
 
     # insert County
@@ -393,10 +393,7 @@ def getPriceId(priceTable, price):
         rows = cursor.execute(selectQuery)
         priceTable = rows.fetchall()
     for priceItem in priceTable:
-        # wenn kein Preis vorhanden
-        if price == 'N/A':
-            return priceTable, 0
-        if float(price) in priceItem:
+        if price in priceItem:
             return priceTable, priceItem[0]
     raise Exception("Price not found")
 
@@ -412,14 +409,15 @@ def getAddressId(addressTable, address):
     raise Exception("Address not found")
 
 
-def getLivingAreaId(livingAreaTable, livingArea):
+def getLivingAreaId(livingAreaTable, lotAreaUnitTable, livingArea, lotAreaUnit):
     if len(livingAreaTable) == 0:
         selectQuery = """SELECT * FROM LivingArea"""
         rows = cursor.execute(selectQuery)
         livingAreaTable = rows.fetchall()
+    lotAreaUnitTable, lotAreaUnitId = getLotAreaUnitId(lotAreaUnitTable, lotAreaUnit)
     for livingAreaItem in livingAreaTable:
-        if int(livingArea) in livingAreaItem:
-            return livingAreaTable, livingAreaItem[0]
+        if int(livingArea) == livingAreaItem[1] and int(lotAreaUnitId) == livingAreaItem[3]:
+            return livingAreaTable, lotAreaUnitTable, livingAreaItem[0]
     raise Exception("LivingArea not found")
 
 
@@ -429,19 +427,25 @@ def insertHouseData(propertiesTable):
     addressTable = tuple()
     priceTable = tuple()
     livingAreaTable = tuple()
+    lotAreaUnitTable = tuple()
+    counter = 0
     for row in csv:
         description = row[16]
         price = row[6]
         address = row[11]
         livingArea = row[18]
+        lotAreaUnit = row[20]
+        houseId = row[0]
         if description != 'description':
+            counter += 1
             propertiesId = getPropertiesId(propertiesTable, getPropertyEntity(row))
             priceTable, priceId = getPriceId(priceTable, price)
             addressTable, addressId = getAddressId(addressTable, address)
-            livingAreaTable, livingAreaId = getLivingAreaId(livingAreaTable, livingArea)
-            houseList.add((description, priceId, addressId, propertiesId, livingAreaId))
+            livingAreaTable, lotAreaUnitTable, livingAreaId = getLivingAreaId(livingAreaTable, lotAreaUnitTable, livingArea, lotAreaUnit)
+            houseList.add((houseId, description, priceId, addressId, propertiesId, livingAreaId))
+            print(counter)
 
-    insertQuery = "INSERT INTO House (Description, FK_Price, FK_Address, FK_Properties, FK_LivingArea) VALUES (?, ?, ?, ?, ?)"
+    insertQuery = "INSERT INTO House (ID, Description, FK_Price, FK_Address, FK_Properties, FK_LivingArea) VALUES (?, ?, ?, ?, ?, ?)"
     cursor.executemany(insertQuery, houseList)
     print('test')
     database.commit()
