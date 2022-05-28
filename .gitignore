@@ -100,3 +100,15 @@ modules.xml
 
 # Sonarlint plugin
 .idea/sonarlint
+
+
+.idea/*
+.idea
+.idea/.gitignore
+.idea/.name
+.idea/dataSources.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/runConfigurations.xml
+.idea/sqldialects.xml
+.idea/vcs.xml
+

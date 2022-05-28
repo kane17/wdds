@@ -38,7 +38,7 @@ WHERE ((SELECT COUNT(DISTINCT Address.FK_County) FROM Address WHERE Address.FK_C
 
 
 
--- Aufgabe 4
+-- Aufgabe 4 TODO
 SELECT City, AVG(p.Price) AS 'Durchschnittlicher Preis' FROM Address a
              INNER JOIN House h ON a.ID = h.FK_Address
              INNER JOIN Price p ON h.FK_Price = p.ID
