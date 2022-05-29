@@ -30,7 +30,7 @@ CREATE TABLE `Coordinates` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Longitude` FLOAT NOT NULL,
     `Latitude` FLOAT NOT NULL,
-    `HasBadGeoCoordinates` BOOL NOT NULL
+    `HasBadGeoCoordinates` BOOLEAN NOT NULL
 );
 
 CREATE TABLE `Country` (
@@ -105,18 +105,18 @@ CREATE TABLE `Properties` (
     `Bathrooms` INTEGER NOT NULL,
     `Bedrooms` INTEGER NOT NULL,
     `Buildingarea` INTEGER NOT NULL,
-    `Parking` BOOL NOT NULL,
-    `HasGarage` BOOL NOT NULL,
+    `Parking` BOOLEAN NOT NULL,
+    `HasGarage` BOOLEAN NOT NULL,
     `Garagespaces` INTEGER NOT NULL,
     `Levels` VARCHAR(30) NOT NULL,
-    `Pool` BOOL NOT NULL,
-    `Spa` BOOL NOT NULL,
-    `IsNewConstruction` BOOL NOT NULL,
-    `HasPetsAllowed` BOOL NOT NULL,
+    `Pool` BOOLEAN NOT NULL,
+    `Spa` BOOLEAN NOT NULL,
+    `IsNewConstruction` BOOLEAN NOT NULL,
+    `HasPetsAllowed` BOOLEAN NOT NULL,
     `PricePerSquareFoot` VARCHAR(10),
     `YearBuilt` VARCHAR(4) NOT NULL,
-    'IsForAuction' BOOL NOT NULL,
-    'IsBankOwned' BOOL NOT NULL,
+    'IsForAuction' BOOLEAN NOT NULL,
+    'IsBankOwned' BOOLEAN NOT NULL,
     'DatePosted' VARCHAR(20),
     `FK_HomeType` INTEGER NOT NULL,
     'FK_Event' INTEGER NOT NULL,

@@ -53,7 +53,7 @@ SELECT * FROM Price;
 
 INSERT INTO LivingArea ('LivingArea', 'LivingAreaValue', 'FK_LotAreaUnit')
 SELECT DISTINCT csv.livingArea, csv.livingAreaValue, l.ID FROM 'RealEstate_California-adapted-new' as csv
-     LEFT JOIN LotAreaUnit l ON l.LotAreaUnit = csv.lotAraUnits;
+     LEFT JOIN LotAreaUnit l ON l.LotAreaUnit = csv.lotAreaUnits;
 SELECT * FROM LivingArea;
 
 
@@ -65,14 +65,27 @@ SELECT DISTINCT csv.bathrooms, csv.bedrooms, csv.buildingArea, csv.parking, csv.
                 csv.is_BankOwned, csv.datePostedString, h.ID, e.ID FROM 'RealEstate_California-adapted-new' as csv
     LEFT JOIN HomeType h ON h.HomeType = csv.homeType
     LEFT JOIN Event e ON e.Event = csv.event;
-SELECT * FROM Properties;
+
 
 
 INSERT INTO House (ID, Description, FK_Price, FK_Address, FK_Properties, FK_LivingArea)
-SELECT DISTINCT csv.id, csv.description, p.ID, a.ID, p.ID, l.ID,  FROM 'RealEstate_California-adapted-new' as csv
-        LEFT JOIN HomeType h ON h.HomeType = csv.homeType
-        LEFT JOIN Event e ON e.Event = csv.event;
-
-
-
-
+SELECT csv.id, csv.description, p.ID, a.ID, prop.ID, l.ID  FROM 'RealEstate_California-adapted-new' as csv
+     LEFT JOIN Price p ON p.Price = csv.price
+     LEFT JOIN Address a ON a.Address = csv.streetAddress
+        AND a.FK_County = (SELECT ID FROM County WHERE County.County = csv.county)
+        AND a.FK_Coordinates = (SELECT ID FROM Coordinates WHERE Coordinates.Latitude = csv.latitude
+        AND Coordinates.Longitude = csv.longitude AND Coordinates.HasBadGeoCoordinates = csv.hasBadGeocode)
+        AND a.FK_City = (SELECT ID FROM City WHERE City.City = csv.city)
+        AND (a.FK_Zipcode = (SELECT ID FROM Zipcode WHERE Zipcode.Zipcode = csv.zipcode) OR csv.zipcode IS NULL)
+    LEFT JOIN Properties prop on prop.Bathrooms = csv.bathrooms AND prop.Bedrooms = csv.bedrooms
+        AND prop.Buildingarea = csv.buildingArea AND prop.Parking = csv.parking AND prop.HasGarage = csv.hasGarage
+        AND prop.Garagespaces = csv.garageSpaces AND prop.Levels = csv.levels AND prop.Pool = csv.pool
+        AND prop.Spa = csv.spa AND prop.IsNewConstruction = csv.isNewConstruction AND prop.HasPetsAllowed = csv.hasPetsAllowed
+        AND prop.PricePerSquareFoot = csv.pricePerSquareFoot AND prop.YearBuilt = csv.yearBuilt
+        AND prop.IsForAuction = csv.is_ForAuction AND prop.IsBankOwned = csv.is_BankOwned
+        AND ((prop.DatePosted = csv.datePostedString) OR csv.datePostedString IS NULL)
+        AND prop.FK_HomeType = (SELECT ID FROM HomeType WHERE HomeType.HomeType = csv.homeType)
+        AND prop.FK_Event = (SELECT ID FROM Event WHERE Event.Event = csv.event)
+    LEFT JOIN LivingArea l ON l.LivingArea = csv.livingArea AND l.LivingAreaValue = csv.livingAreaValue
+        AND l.FK_LotAreaUnit = (SELECT ID FROM LotAreaUnit WHERE LotAreaUnit.LotAreaUnit = csv.lotAreaUnits) ;
+SELECT * FROM House;
