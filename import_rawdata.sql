@@ -89,3 +89,13 @@ SELECT csv.id, csv.description, p.ID, a.ID, prop.ID, l.ID  FROM 'RealEstate_Cali
     LEFT JOIN LivingArea l ON l.LivingArea = csv.livingArea AND l.LivingAreaValue = csv.livingAreaValue
         AND l.FK_LotAreaUnit = (SELECT ID FROM LotAreaUnit WHERE LotAreaUnit.LotAreaUnit = csv.lotAreaUnits) ;
 SELECT * FROM House;
+
+
+-- INSERTING SOME OFFERS INTO THE DB
+INSERT INTO Offer (Offer, BidderName, FK_House) VALUES
+(1500000, 'Elon Musk', '94502-24870550'),
+(1910000, 'Bill Gates', '90008-20577035'),
+(3550000, 'LeBron James', '90405-2070057452'),
+(1200000, 'Stephen Curry', '94112-15170795'),
+(599000, 'Michelle Obama', '95828-240358194');
+

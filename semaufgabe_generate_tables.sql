@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS `HomeType`;
 DROP TABLE IF EXISTS `Currency`;
 DROP TABLE IF EXISTS `Event`;
 DROP TABLE IF EXISTS `County`;
+DROP TABLE IF EXISTS `Offer`;
 PRAGMA foreign_keys=on;
 
 CREATE TABLE `City` (
@@ -140,6 +141,15 @@ CREATE TABLE `House` (
 );
 
 
+CREATE TABLE `Offer` (
+    `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `Offer` INTEGER NOT NULL,
+    `BidderName` VARCHAR(50) NOT NULL,
+    `FK_House` VARCHAR(40) NOT NULL,
+    FOREIGN KEY ('FK_House') REFERENCES House (ID)
+);
+
+
 SELECT * FROM  `House`;
 SELECT * FROM  `Address`;
 SELECT * FROM  `Zipcode`;
@@ -155,3 +165,4 @@ SELECT * FROM  `HomeType`;
 SELECT * FROM  `Currency`;
 SELECT * FROM  `Event`;
 SELECT * FROM  `County`;
+SELECT * FROM  `Offer`;
