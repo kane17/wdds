@@ -32,17 +32,17 @@ SELECT count(*) as 'Anzahl Häuser mit Baujahr 2020 und höher' FROM House WHERE
 
 -- Aufgabe 3 TODO: OPTIMIERE!
 SELECT DISTINCT c.City FROM City c
-                                INNER JOIN Address a ON a.FK_City = c.ID
-                                INNER JOIN County co ON co.ID = a.FK_County
+    INNER JOIN Address a ON a.FK_City = c.ID
+    INNER JOIN County co ON co.ID = a.FK_County
 WHERE ((SELECT COUNT(DISTINCT Address.FK_County) FROM Address WHERE Address.FK_City=c.ID) > 1)
 
 
 
--- Aufgabe 4 TODO
-SELECT City, AVG(p.Price) AS 'Durchschnittlicher Preis' FROM Address a
-             INNER JOIN House h ON a.ID = h.FK_Address
-             INNER JOIN Price p ON h.FK_Price = p.ID
-             INNER JOIN City c ON c.ID = a.FK_City GROUP BY City;
+-- Aufgabe 4
+SELECT c.City, ROUND(AVG(p.Price), 2) AS 'Durchschnittlicher Preis' FROM House h
+    LEFT JOIN Address a ON a.ID = h.FK_Address
+    LEFT JOIN Price p ON h.FK_Price = p.ID
+    LEFT JOIN City c ON c.ID = a.FK_City GROUP BY c.City;
 
 
 
