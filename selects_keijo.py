@@ -26,6 +26,33 @@ def get_amount_of_buildings_built_after(yearbuilt):
 #     print(city[0])
 #
 # cursor.close()
+# def get_amount_of_cities_with_more_than_one_house():
+#     sqlquery = "SELECT DISTINCT c.City FROM City c " \
+#                "INNER JOIN Address a ON a.FK_City = c.ID " \
+#                "INNER JOIN County co ON co.ID = a.FK_County " \
+#                "WHERE ((SELECT COUNT(DISTINCT Address.FK_County) FROM Address WHERE Address.FK_City=c.ID) > 1);"
+#     result = cursor.execute(sqlquery)
+#     summarycities = result.fetchall()
+#     print("Städte, mit Immobilien in mehr als einem Landkreis:")
+#     for x in summarycities:
+#         print(x)
+#
+# get_amount_of_cities_with_more_than_one_house()
+
+
+# Aufgabe 4
+def select_cities_by_avg_price():
+    sqlquery = """SELECT c.City, ROUND(AVG(p.Price), 2) AS 'Durchschnittlicher Preis' FROM House h
+    LEFT JOIN Address a ON a.ID = h.FK_Address
+    LEFT JOIN Price p ON h.FK_Price = p.ID
+    LEFT JOIN City c ON c.ID = a.FK_City GROUP BY c.City ORDER BY ROUND(AVG(p.Price), 2) DESC;"""
+
+    result = cursor.execute(sqlquery)
+
+    for entry in result.fetchall():
+        print(entry)
+
+select_cities_by_avg_price()
 
 
 # Aufgabe 5
@@ -49,7 +76,7 @@ def select_cities_with_sqftprices_over_average():
 
 
 # Aufgabe 6
-def get_offers_for_city(city):
+def select_offers_for_city(city):
     sqlquery = """SELECT HT.HomeType, P2.Price, h.Description  FROM City c
         LEFT JOIN Address a ON a.FK_City = c.ID
         LEFT JOIN House h ON h.FK_Address = a.ID
@@ -67,4 +94,4 @@ def get_offers_for_city(city):
 
 
 city = input('Aufgabe 6: Geben Sie bitte eine Stadt ein')
-get_offers_for_city(city)
+select_offers_for_city(city)
