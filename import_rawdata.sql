@@ -78,7 +78,7 @@ SELECT DISTINCT csv.bathrooms, csv.bedrooms, csv.buildingArea, csv.parking, csv.
                 csv.is_BankOwned, csv.datePostedString, h.ID, e.ID FROM 'RealEstate_California-adapted-new' as csv
     LEFT JOIN HomeType h ON h.HomeType = csv.homeType
     LEFT JOIN Event e ON e.Event = csv.event;
-
+SELECT * FROM Properties;
 
 -- Zum Schluss wird die zentrale HouseTabelle mit allen Referenzen abgefüllt.
 -- Mit Hilfe von Sub Selects, stellen wir sicher, dass die korrekten Address und Properties Einträge referenziert werden.
@@ -112,4 +112,4 @@ INSERT INTO Offer (Offer, BidderName, FK_House) VALUES
 (3550000, 'LeBron James', '90405-2070057452'),
 (1200000, 'Stephen Curry', '94112-15170795'),
 (599000, 'Michelle Obama', '95828-240358194');
-
+SELECT * FROM Offer;

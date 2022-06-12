@@ -37,7 +37,7 @@ SELECT count(*) as 'Anzahl Häuser mit Baujahr 2020 und höher' FROM House WHERE
 SELECT DISTINCT c.City FROM City c
     INNER JOIN Address a ON a.FK_City = c.ID
     INNER JOIN County co ON co.ID = a.FK_County
-WHERE ((SELECT COUNT(DISTINCT Address.FK_County) FROM Address WHERE Address.FK_City=c.ID) > 1)
+WHERE ((SELECT COUNT(DISTINCT Address.FK_County) FROM Address WHERE Address.FK_City=c.ID) > 1);
 
 
 

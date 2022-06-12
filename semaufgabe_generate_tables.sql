@@ -163,3 +163,4 @@ CREATE TABLE `Offer` (
     `FK_House` VARCHAR(40) NOT NULL,
     FOREIGN KEY ('FK_House') REFERENCES House (ID)
 );
+

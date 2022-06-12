@@ -3247,8 +3247,8 @@
 								"$ref": "AAAAAAGALQ9jtsJtxgY="
 							},
 							"name": "ID",
-							"type": "INTEGER",
-							"length": 0,
+							"type": "VARCHAR",
+							"length": "40",
 							"primaryKey": true
 						},
 						{

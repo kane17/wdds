@@ -3,12 +3,12 @@ import sqlite3
 
 
 def getCsv():
-    csvfile = open('../../RealEstate_California-adapted-new.csv',
+    csvfile = open('RealEstate_California-adapted-new.csv',
                    newline='')  # `with` statement available in 2.5+# csv.DictReader uses first line in file for column headings by default
     return csv.reader(csvfile, delimiter=',', quotechar='|')
 
 
-database = sqlite3.connect('../wdda_sem_db1.db')
+database = sqlite3.connect('wdda_sem_db1.db')
 cursor = database.cursor()
 
 
@@ -246,22 +246,9 @@ def insertLivingAreaData():
 insertLivingAreaData()
 
 
-# TODO: ausprogrammieren?
 def getCurrencyId():
     return 1
 
-
-# if currency == '':
-#     return currencyTable, 0
-# if len(currencyTable) == 0:
-#     #selectQuery = """SELECT ID FROM City WHERE City = ?"""
-#     selectQuery = """SELECT * FROM LotAreaUnit"""
-#     rows = cursor.execute(selectQuery)
-#     lotAreaUnitTable = rows.fetchall()
-# for currencyItem in currencyTable:
-#     if currency in currencyItem:
-#         return currencyTable, currencyItem[0]
-# raise Exception("LotAreaUnit not found")
 
 def insertPrices():
     csv = getCsv()
@@ -342,10 +329,10 @@ def insertPropertiesData():
         if homeType != 'homeType':
             propertyEntry = getPropertyEntity(row)
             propertiesList.add((
-                               propertyEntry[0], propertyEntry[1], propertyEntry[2], propertyEntry[3], propertyEntry[4],
-                               propertyEntry[5], propertyEntry[6], propertyEntry[7], propertyEntry[8], propertyEntry[9],
-                               propertyEntry[10], propertyEntry[11], propertyEntry[12], propertyEntry[13],
-                               propertyEntry[14], propertyEntry[15], propertyEntry[16], propertyEntry[17]))
+                propertyEntry[0], propertyEntry[1], propertyEntry[2], propertyEntry[3], propertyEntry[4],
+                propertyEntry[5], propertyEntry[6], propertyEntry[7], propertyEntry[8], propertyEntry[9],
+                propertyEntry[10], propertyEntry[11], propertyEntry[12], propertyEntry[13],
+                propertyEntry[14], propertyEntry[15], propertyEntry[16], propertyEntry[17]))
 
     insertQuery = "INSERT INTO Properties (Bathrooms, Bedrooms, Buildingarea, Parking, HasGarage, Garagespaces, Levels, Pool, Spa, IsNewConstruction, HasPetsAllowed, PricePerSquareFoot, YearBuilt, IsForAuction, IsBankOwned, DatePosted, FK_HomeType, FK_Event) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     cursor.executemany(insertQuery, propertiesList)
@@ -440,7 +427,8 @@ def insertHouseData(propertiesTable):
             propertiesId = getPropertiesId(propertiesTable, getPropertyEntity(row))
             priceTable, priceId = getPriceId(priceTable, price)
             addressTable, addressId = getAddressId(addressTable, address)
-            livingAreaTable, lotAreaUnitTable, livingAreaId = getLivingAreaId(livingAreaTable, lotAreaUnitTable, livingArea, lotAreaUnit)
+            livingAreaTable, lotAreaUnitTable, livingAreaId = getLivingAreaId(livingAreaTable, lotAreaUnitTable,
+                                                                              livingArea, lotAreaUnit)
             houseList.add((houseId, description, priceId, addressId, propertiesId, livingAreaId))
             print(counter)
 
@@ -449,17 +437,8 @@ def insertHouseData(propertiesTable):
     print('test')
     database.commit()
 
-insertHouseData(propertiesTable)
 
-# selectQuery = """SELECT * FROM House"""
-# a = cursor.execute(selectQuery)
-#
-# rows = cursor.fetchall()
-#
-# for row in rows:
-#     print(row)
-#
-# print(len(rows))
+insertHouseData(propertiesTable)
 
 cursor.close()
 
