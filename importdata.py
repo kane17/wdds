@@ -97,7 +97,6 @@ def insertData():
             cursor.execute(insertQuery, (county,))
 
     # insert State
-    # TODO: Insert from select
     insertQuery = "INSERT INTO State (State, FK_Country) VALUES (?, ?)"
     for state in stateList:
         if state != 'state':

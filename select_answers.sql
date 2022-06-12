@@ -1,8 +1,8 @@
-SELECT * FROM House WHERE (SELECT ID FROM Properties WHERE YearBuilt = '2020' OR YearBuilt = '2021' OR YearBuilt = '2022' OR YearBuilt = '9999')
-
 -- Aufgabe 1
-
-DROP VIEW Houses;
+-- Zunächst wir die View gelöscht, falls sie bereits existiert.
+-- Im nächsten Schritt wird die View erstellt, mithilfe von LEFT JOIN auf alle Tabellen von unserem Schema.
+-- Dabei werden immer die Foreign Keys mit den IDs verglichen um die Beziehung sauber aufzulösen.
+DROP VIEW IF EXISTS Houses;
 CREATE VIEW IF NOT EXISTS Houses AS
 SELECT h.ID AS ID, country.Country AS Country, prop.DatePosted AS datePostedString, prop.IsBankOwned as is_bankOwned, prop.IsForAuction AS is_forAuction, e.Event AS event,
        pr.Price AS price, prop.PricePerSquareFoot AS pricePerSquareFoot, c.City AS city, s.State AS state, prop.YearBuilt AS yearBuilt, a.Address as streetAddress, z.Zipcode AS zipcode,
@@ -27,10 +27,13 @@ SELECT h.ID AS ID, country.Country AS Country, prop.DatePosted AS datePostedStri
 
 
 -- Aufgabe 2
-SELECT count(*) as 'Anzahl Häuser mit Baujahr 2020 und höher' FROM House WHERE FK_Properties IN (SELECT ID From Properties WHERE YearBuilt = '2020' OR YearBuilt = '2021' OR YearBuilt = '2022' OR YearBuilt = '9999');
+-- Mithilfe von count() und einem Sub-Select, welcher prüft ob das Baujahr 2021 oder 2022 ist, wurde Aufgabe 2 gelöst.
+SELECT count(*) as 'Anzahl Häuser mit Baujahr 2020 und höher' FROM House WHERE FK_Properties IN (SELECT ID From Properties WHERE YearBuilt = '2021' OR YearBuilt = '2022');
 
 
--- Aufgabe 3 TODO: OPTIMIERE!
+-- Aufgabe 3
+-- Mithilfe von INNER JOIN werden die Städte abgefragt, welche Immobilien in mehreren Counties haben.
+-- Um die Anzahl counties zu vergleichen, haben wir wieder ein SELECT COUNT() verwendet im Sub-Select
 SELECT DISTINCT c.City FROM City c
     INNER JOIN Address a ON a.FK_City = c.ID
     INNER JOIN County co ON co.ID = a.FK_County
@@ -39,6 +42,8 @@ WHERE ((SELECT COUNT(DISTINCT Address.FK_County) FROM Address WHERE Address.FK_C
 
 
 -- Aufgabe 4
+-- Hier werden die Städte mit gerundetem durchschnittlichem Preis und nach Preis absteigend sortiert, angezeigt.
+-- Der Durschnitt wird mit AVG() berechnet und gerundet wird mit ROUND()
 SELECT c.City, ROUND(AVG(p.Price), 2) AS 'Durchschnittlicher Preis' FROM House h
     LEFT JOIN Address a ON a.ID = h.FK_Address
     LEFT JOIN Price p ON h.FK_Price = p.ID
@@ -46,16 +51,21 @@ SELECT c.City, ROUND(AVG(p.Price), 2) AS 'Durchschnittlicher Preis' FROM House h
 
 
 -- Aufgabe 5
+-- Hier wird wie in Aufgabe 4 der Durchschnitt des Price pro Quadratfuss mit ROUND(AVG()) berechnet.
+-- Da wir PricePerSquareFoot als VARCHAR in der Datenbank haben, muss ein CAST AS FLOAT gemacht werden, damit der Wert
+-- sauber berechnet werden kann. Zusätzlich mussten die Werte 'N/A' von PricePerSquareFoot ignoriert werden um eine
+-- fehlerfreie Berechnung zu ermöglichen. Zusätzlich wird jeweils noch der Name der Stadt ausgegeben.
 SELECT c.City, ROUND(AVG(prop.PricePerSquareFoot), 2) AS PricePerSquareFoot FROM House h
     LEFT JOIN Address a ON a.ID = h.FK_Address
     LEFT JOIN City c ON c.ID = a.FK_City
     LEFT JOIN Properties prop ON prop.ID = h.FK_Properties
-    WHERE CAST(PricePerSquareFoot AS FLOAT) > CAST((SELECT ROUND(AVG(prop.PricePerSquareFoot), 2) AS 'Preis Pro Quadratmeter'
+    WHERE CAST(PricePerSquareFoot AS FLOAT) > CAST((SELECT ROUND(AVG(prop.PricePerSquareFoot), 2) AS 'Preis Pro Quadratfuss'
     FROM House h LEFT JOIN Properties prop ON prop.ID = h.FK_Properties WHERE prop.PricePerSquareFoot != 'N/A') AS FLOAT) GROUP BY c.City;
 
 
-
 -- Aufgabe 6
+-- Hier werden alle Angebote der Stadt Parlier angezeigt, sprich diejenigen Einträge welche den Event 'Listed for sale'
+-- hinterlegt haben.
 SELECT HT.HomeType, P2.Price, h.Description  FROM City c
     LEFT JOIN Address a ON a.FK_City = c.ID
     LEFT JOIN House h ON h.FK_Address = a.ID

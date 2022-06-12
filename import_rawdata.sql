@@ -1,25 +1,35 @@
+-- Als erstes müssen wir sicherstellen, dass das CSV File bereits in eine Tabelle importiert wurde.
 SELECT * FROM 'RealEstate_California-adapted-new';
 
+-- Hier werden diejenigen Tabellen abgefüllt, welche keine Abhängigkeiten haben, also keine Foreign Keys benötigen.
+-- Dazu haben wir SELECT DISTINCT verwendet, da keine doppelten Einträge abgefüllt werden sollten.
+-- Im statement werden auch die leeren Werte ignoriert um NOT NULL Constraint Violations zu vermeiden.
+-- Abfüllen der Country Tabelle.
 INSERT INTO Country ('Country')  SELECT DISTINCT country FROM 'RealEstate_California-adapted-new';
 SELECT * FROM Country;
 
+-- Abfüllen der Zipcode Tabelle.
 INSERT INTO Zipcode ('Zipcode')  SELECT DISTINCT zipcode FROM 'RealEstate_California-adapted-new' WHERE zipcode != '';
 SELECT * FROM Zipcode;
 
--- TODO
+-- Abfüllen der State Tabelle.
 INSERT INTO State (State, FK_Country) SELECT DISTINCT csv.state, c.ID FROM 'RealEstate_California-adapted-new' as csv, Country as c WHERE csv.state != '';
 SELECT * FROM State;
 
+-- Abfüllen der City Tabelle.
 INSERT INTO City ('City')  SELECT DISTINCT city FROM 'RealEstate_California-adapted-new' WHERE city != '';
 SELECT * FROM City;
 
+-- Abfüllen der County Tabelle.
 INSERT INTO County ('County')  SELECT DISTINCT county FROM 'RealEstate_California-adapted-new' WHERE county != '';
 SELECT * FROM County;
 
+-- Abfüllen der Coordinates Tabelle.
 INSERT INTO Coordinates ('Longitude', 'Latitude', 'HasBadGeoCoordinates') SELECT DISTINCT longitude, latitude, hasBadGeocode FROM 'RealEstate_California-adapted-new';
 SELECT * FROM Coordinates;
 
-
+-- Hier werden die Addressdaten aller Häuser abgefüllt, dabei wird ein LEFT JOIN auf die oben abgefüllten Tabellen gemacht,
+-- um die Foreign Keys korrekt aufzulösen.
 INSERT INTO Address ('Address', 'FK_City', 'FK_State', 'FK_Zipcode', 'FK_Coordinates', 'FK_County')
 SELECT csv.streetAddress, c.ID, s.ID, z.ID, coor.ID, cou.ID FROM 'RealEstate_California-adapted-new' as csv
      LEFT JOIN City c ON c.City = csv.city
@@ -30,33 +40,36 @@ SELECT csv.streetAddress, c.ID, s.ID, z.ID, coor.ID, cou.ID FROM 'RealEstate_Cal
      LEFT JOIN County cou ON cou.County = csv.county;
 SELECT * FROM Address;
 
+-- Abfüllen der HomeType Tabelle.
 INSERT INTO HomeType ('HomeType')  SELECT DISTINCT homeType FROM 'RealEstate_California-adapted-new' WHERE homeType != '';
 SELECT * FROM HomeType;
 
+-- Abfüllen der Event Tabelle.
 INSERT INTO Event ('Event')  SELECT DISTINCT event FROM 'RealEstate_California-adapted-new' WHERE event != '';
 SELECT * FROM Event;
 
+-- Abfüllen der Currency Tabelle.
 INSERT INTO Currency ('Currency')  SELECT DISTINCT currency FROM 'RealEstate_California-adapted-new' WHERE currency != '';
 SELECT * FROM Currency;
 
+-- Abfüllen der LotAreaUnit Tabelle.
 INSERT INTO LotAreaUnit ('LotAreaUnit')  SELECT DISTINCT lotAreaUnits FROM 'RealEstate_California-adapted-new' WHERE lotAreaUnits != '';
 SELECT * FROM LotAreaUnit;
 
-
+-- Price wird mit Foreign Key Currency abgefüllt.
 INSERT INTO Price ('Price', 'FK_Currency')
 SELECT DISTINCT csv.price, c.ID FROM 'RealEstate_California-adapted-new' as csv
      LEFT JOIN Currency c ON c.Currency = csv.currency;
 SELECT * FROM Price;
 
-
-
-
+-- Hier wird die LivingArea Tabelle importiert, mit Referenz auf die LotAreaUnit.
 INSERT INTO LivingArea ('LivingArea', 'LivingAreaValue', 'FK_LotAreaUnit')
 SELECT DISTINCT csv.livingArea, csv.livingAreaValue, l.ID FROM 'RealEstate_California-adapted-new' as csv
      LEFT JOIN LotAreaUnit l ON l.LotAreaUnit = csv.lotAreaUnits;
 SELECT * FROM LivingArea;
 
-
+-- Hier werden die Properties der einzelnen Häuser in eine eigene Tabelle geladen. Zusätzlich werden die Foreign Keys
+-- HomeType und Event abgefragt.
 INSERT INTO Properties ('Bathrooms', 'Bedrooms', 'Buildingarea', 'Parking', 'HasGarage', 'Garagespaces', 'Levels', 'Pool',
                         'Spa', 'IsNewConstruction', 'HasPetsAllowed', 'PricePerSquareFoot', 'YearBuilt', 'IsForAuction',
                         'IsBankOwned', 'DatePosted', 'FK_HomeType', 'FK_Event')
@@ -67,7 +80,8 @@ SELECT DISTINCT csv.bathrooms, csv.bedrooms, csv.buildingArea, csv.parking, csv.
     LEFT JOIN Event e ON e.Event = csv.event;
 
 
-
+-- Zum Schluss wird die zentrale HouseTabelle mit allen Referenzen abgefüllt.
+-- Mit Hilfe von Sub Selects, stellen wir sicher, dass die korrekten Address und Properties Einträge referenziert werden.
 INSERT INTO House (ID, Description, FK_Price, FK_Address, FK_Properties, FK_LivingArea)
 SELECT csv.id, csv.description, p.ID, a.ID, prop.ID, l.ID  FROM 'RealEstate_California-adapted-new' as csv
      LEFT JOIN Price p ON p.Price = csv.price
@@ -91,7 +105,7 @@ SELECT csv.id, csv.description, p.ID, a.ID, prop.ID, l.ID  FROM 'RealEstate_Cali
 SELECT * FROM House;
 
 
--- INSERTING SOME OFFERS INTO THE DB
+-- Zum Schluss werden einige Angebote in die Tabelle Offer geladen
 INSERT INTO Offer (Offer, BidderName, FK_House) VALUES
 (1500000, 'Elon Musk', '94502-24870550'),
 (1910000, 'Bill Gates', '90008-20577035'),

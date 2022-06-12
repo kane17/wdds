@@ -1,3 +1,4 @@
+-- Löscht alle Tabellen, falls sie existieren.
 PRAGMA foreign_keys=off;
 DROP TABLE IF EXISTS `House`;
 DROP TABLE IF EXISTS `Address`;
@@ -17,16 +18,19 @@ DROP TABLE IF EXISTS `County`;
 DROP TABLE IF EXISTS `Offer`;
 PRAGMA foreign_keys=on;
 
+-- Erstellt die Tabelle City
 CREATE TABLE `City` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `City` VARCHAR(50) NOT NULL
 );
 
+-- Erstellt die Tabelle Zipcode
 CREATE TABLE `Zipcode` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Zipcode` INTEGER NOT NULL
 );
 
+-- Erstellt die Tabelle Coordinates
 CREATE TABLE `Coordinates` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Longitude` FLOAT NOT NULL,
@@ -34,16 +38,19 @@ CREATE TABLE `Coordinates` (
     `HasBadGeoCoordinates` BOOLEAN NOT NULL
 );
 
+-- Erstellt die Tabelle Country
 CREATE TABLE `Country` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Country` VARCHAR(25) NOT NULL
 );
 
+-- Erstellt die Tabelle County
 CREATE TABLE 'County' (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `County` VARCHAR(30) NOT NULL
 );
 
+-- Erstellt die Tabelle State mit entsprechenden Foreign Key
 CREATE TABLE `State` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `State` VARCHAR(50) NOT NULL,
@@ -51,6 +58,7 @@ CREATE TABLE `State` (
     FOREIGN KEY ('FK_Country') REFERENCES Country (ID)
 );
 
+-- Erstellt die Tabelle Address mit entsprechenden Foreign Keys
 CREATE TABLE `Address` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Address` VARCHAR(100) NOT NULL,
@@ -66,11 +74,13 @@ CREATE TABLE `Address` (
     FOREIGN KEY ('FK_County') REFERENCES County (ID)
 );
 
+-- Erstellt die Tabelle Currency
 CREATE TABLE `Currency` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Currency` VARCHAR(5) NOT NULL
 );
 
+-- Erstellt die Tabelle State mit entsprechenden Foreign Key
 CREATE TABLE `Price` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Price` VARCHAR(20) NOT NULL,
@@ -78,11 +88,13 @@ CREATE TABLE `Price` (
     FOREIGN KEY ('FK_Currency') REFERENCES Currency (ID)
 );
 
+-- Erstellt die Tabelle LotAreaUnit
 CREATE TABLE `LotAreaUnit` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `LotAreaUnit` VARCHAR(5) NOT NULL
 );
 
+-- Erstellt die Tabelle LivingArea mit entsprechendem Foreign Key
 CREATE TABLE `LivingArea` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `LivingArea` INTEGER NOT NULL,
@@ -91,16 +103,19 @@ CREATE TABLE `LivingArea` (
     FOREIGN KEY ('FK_LotAreaUnit') REFERENCES LotAreaUnit (ID)
 );
 
+-- Erstellt die Tabelle HomeType
 CREATE TABLE `HomeType` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `HomeType` VARCHAR(15) NOT NULL
 );
 
+-- Erstellt die Tabelle Event
 CREATE TABLE `Event` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Event` VARCHAR(15) NOT NULL
 );
 
+-- Erstellt die Tabelle Properties mit entsprechenden Foreign Keys
 CREATE TABLE `Properties` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Bathrooms` INTEGER NOT NULL,
@@ -125,7 +140,7 @@ CREATE TABLE `Properties` (
     FOREIGN KEY ('FK_Event') REFERENCES Event (ID)
 );
 
-
+-- Erstellt die Tabelle House mit entsprechenden Foreign Keys
 CREATE TABLE `House` (
     `ID` VARCHAR(40) NOT NULL,
     `Description` VARCHAR(10000),
@@ -140,7 +155,7 @@ CREATE TABLE `House` (
     FOREIGN KEY ('FK_LivingArea') REFERENCES LivingArea (ID)
 );
 
-
+-- Erstellt die Tabelle Offer mit entsprechenden Foreign Keys
 CREATE TABLE `Offer` (
     `ID` INTEGER PRIMARY KEY AUTOINCREMENT,
     `Offer` INTEGER NOT NULL,
@@ -148,21 +163,3 @@ CREATE TABLE `Offer` (
     `FK_House` VARCHAR(40) NOT NULL,
     FOREIGN KEY ('FK_House') REFERENCES House (ID)
 );
-
-
-SELECT * FROM  `House`;
-SELECT * FROM  `Address`;
-SELECT * FROM  `Zipcode`;
-SELECT * FROM  `State`;
-SELECT * FROM  `Country`;
-SELECT * FROM  `Coordinates`;
-SELECT * FROM  `Price`;
-SELECT * FROM  `City`;
-SELECT * FROM  `Properties`;
-SELECT * FROM  `LivingArea`;
-SELECT * FROM  `LotAreaUnit`;
-SELECT * FROM  `HomeType`;
-SELECT * FROM  `Currency`;
-SELECT * FROM  `Event`;
-SELECT * FROM  `County`;
-SELECT * FROM  `Offer`;
