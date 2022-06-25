@@ -5,7 +5,6 @@ RealEstate_California_adapted <- read.csv("RealEstate_California-adapted-new.csv
 names(RealEstate_California_adapted)
 attach(RealEstate_California_adapted)
 
-install.packages(tidyr)
 library(tidyr)
 
 newWithoutNull <- RealEstate_California_adapted %>% 
@@ -16,25 +15,43 @@ summary(newWithoutNull)
 nrow(newWithoutNull)
 
 
-data <- newWithoutNull[complete.cases(newWithoutNull$price),]
+realEstateData <- newWithoutNull[complete.cases(newWithoutNull$price),]
 
 # Datensatz ohne Price welche einen Null wert haben
-nrow(data)
+nrow(realEstateData)
 
-model1  = lm(price ~ bathrooms + bedrooms, data = data)
-summary(model1)
-
-plot(price)
+priceEstateModel  = lm(price ~ bathrooms + bedrooms, data = realEstateData)
+summary(priceEstateModel)
 
 
-plot(resid(model1) ~ predict(model1))
+plot(model1$residuals)
+abline(model1$residuals)
+length(model1$residuals)
 
-nrow(model1)
-plot(resid(model1))
 
-plot(model1$residuals, xlim=c(0,30))
 
-plot(model1)
+
+ablineModel <- lm(priceEstateModel$residuals~realEstateData$price)
+
+
+
+#nicht ausführen!!!!!! bei mac os
+plot(priceEstateModel$residuals~realEstateData$price)
+abline(model2, col="red")
+
+
+
+
+
+
+
+
+abline(model1$residuals, data$price, col="blue")
+abline(data$price, data$bathrooms+data$bedrooms, col="red")
+abline(model1,col="red")
+
+
+
 
 hist(model1$residuals + mean(model1~price), xlim=c(0,30))
 
@@ -136,7 +153,31 @@ resid(model1)
 
 
 
+
+
+
+
+
+
 # Teil 2
+
+RealEstate_California_adapted <- read.csv("RealEstate_California-adapted-new.csv")
+names(RealEstate_California_adapted)
+attach(RealEstate_California_adapted)
+
+install.packages(tidyr)
+library(tidyr)
+
+newWithoutNull <- RealEstate_California_adapted %>% 
+  mutate_all(~ifelse(. %in% c("N/A", "null", ""), NA, .))
+
+View(newWithoutNull)
+summary(newWithoutNull)
+nrow(newWithoutNull)
+
+
+data <- newWithoutNull[complete.cases(newWithoutNull$price),]
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 library(readxl)
 california <- read_excel("california.xls", sheet="19tbl08ca")
@@ -144,8 +185,6 @@ head(california)
 
 View(california)
 View(data)
-
-total <- merge(data , california, by="city")
 
 
 joined_df <- merge(data, california, by.x = "city", 
@@ -159,6 +198,8 @@ model2  = lm(price ~ bathrooms + bedrooms + Crimerate, data = joined_df)
 confint(model2)
 summary(model2)
 
+
+plot(price ~ bathrooms + bedrooms)
 
 
 
